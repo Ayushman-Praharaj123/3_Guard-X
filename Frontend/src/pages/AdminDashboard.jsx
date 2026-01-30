@@ -26,6 +26,7 @@ export default function AdminDashboard() {
   const [connected, setConnected] = useState(false);
   const [cameras, setCameras] = useState([]);
   const [detections, setDetections] = useState({});
+  const [fullscreenFeed, setFullscreenFeed] = useState(null);
   const [stats, setStats] = useState({
     totalCameras: 0,
     deployedCameras: 0,
@@ -265,75 +266,127 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="p-6">
-        {cameras.length === 0 ? (
-          <div className="text-center py-20">
-            <Camera className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-400 mb-2">No Cameras Connected</h2>
-            <p className="text-slate-500">Waiting for camera clients to connect...</p>
-          </div>
-        ) : (
-          <>
-            {/* Camera List */}
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-4">Connected Cameras</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {cameras.map((camera) => (
-                  <div
-                    key={camera.sid}
-                    className={`bg-slate-800 rounded-lg p-4 border ${
-                      camera.deployed ? 'border-emerald-500' : 'border-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Camera className={`w-5 h-5 ${camera.deployed ? 'text-emerald-400' : 'text-slate-400'}`} />
-                        <span className="font-medium">{camera.camera_id}</span>
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        camera.deployed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'
-                      }`}>
-                        {camera.deployed ? 'DEPLOYED' : 'IDLE'}
-                      </span>
+        {/* 6 Operator Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => {
+            // Find if there's a camera connected for this slot
+            const camera = cameras[index];
+            const detection = camera ? detections[camera.sid] : null;
+            const operatorNum = index + 1;
+
+            return (
+              <div
+                key={index}
+                className={`bg-slate-800/80 rounded-xl border ${
+                  camera?.deployed ? 'border-emerald-500' : 'border-slate-700/50'
+                } overflow-hidden transition-all duration-300 ${
+                  detection ? 'cursor-pointer hover:border-emerald-400 hover:scale-[1.02]' : ''
+                }`}
+                onClick={detection ? () => setFullscreenFeed(detection) : undefined}
+              >
+                {/* Header */}
+                <div className="bg-slate-900/50 px-4 py-3 flex items-center justify-between border-b border-slate-700/50">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-slate-500" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-white">
+                        {camera ? camera.camera_id : `Operator ${operatorNum}`}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {camera ? `User: ${camera.username}` : 'Model: best.pt'}
+                      </p>
                     </div>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded font-medium ${
+                    camera?.deployed
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-slate-700/50 text-slate-400'
+                  }`}>
+                    {camera?.deployed ? 'DEPLOYED' : 'WAITING'}
+                  </span>
+                </div>
 
-                    <p className="text-sm text-slate-400 mb-3">User: {camera.username}</p>
+                {/* Video Feed or Placeholder */}
+                <div className="relative bg-slate-900/30 aspect-video flex items-center justify-center">
+                  {detection ? (
+                    <VideoTile detection={detection} minimal={true} />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <Camera className="w-20 h-20 text-slate-700 mb-3" />
+                      <p className="text-slate-500 text-sm">
+                        {camera ? 'Camera ready' : 'No operator connected'}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                    {camera.deployed ? (
+                {/* Footer - Deploy/Stop Button */}
+                <div className="px-4 py-3 bg-slate-900/30">
+                  {camera ? (
+                    camera.deployed ? (
                       <button
-                        onClick={() => handleStop(camera.sid)}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStop(camera.sid);
+                        }}
+                        className="w-full bg-red-600/80 hover:bg-red-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 font-medium"
                       >
                         <Square className="w-4 h-4" />
-                        Stop
+                        Stop Streaming
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleDeploy(camera.sid)}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeploy(camera.sid);
+                        }}
+                        className="w-full bg-emerald-600/80 hover:bg-emerald-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 font-medium"
                       >
                         <Play className="w-4 h-4" />
-                        Deploy
+                        Deploy Camera
                       </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Video Grid */}
-            {Object.keys(detections).length > 0 && (
-              <div>
-                <h2 className="text-lg font-semibold mb-4">Live Feeds</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(detections).map(([sid, detection]) => (
-                    <VideoTile key={sid} detection={detection} />
-                  ))}
+                    )
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-slate-700/30 text-slate-500 py-2.5 px-4 rounded-lg font-medium cursor-not-allowed"
+                    >
+                      Waiting for Connection
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
-          </>
-        )}
+            );
+          })}
+        </div>
       </div>
+
+      {/* Fullscreen Feed Modal */}
+      {fullscreenFeed && (
+        <div
+          className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setFullscreenFeed(null)}
+        >
+          <div className="relative w-full h-full max-w-7xl max-h-screen flex flex-col">
+            {/* Close Button */}
+            <button
+              onClick={() => setFullscreenFeed(null)}
+              className="absolute -top-2 right-0 text-white hover:text-red-400 transition-colors text-4xl font-bold z-10 bg-slate-800/80 rounded-full w-12 h-12 flex items-center justify-center"
+            >
+              ✕
+            </button>
+
+            {/* Fullscreen Video */}
+            <div className="flex-1 flex items-center justify-center">
+              <VideoTile
+                detection={fullscreenFeed}
+                minimal={false}
+                fullscreen={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

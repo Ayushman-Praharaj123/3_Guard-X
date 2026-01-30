@@ -14,9 +14,9 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Camera, AlertTriangle } from 'lucide-react';
+import { Camera, AlertTriangle, Maximize2 } from 'lucide-react';
 
-export default function VideoTile({ detection, minimal = false }) {
+export default function VideoTile({ detection, minimal = false, fullscreen = false, onClick }) {
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
 
@@ -119,23 +119,33 @@ export default function VideoTile({ detection, minimal = false }) {
   const hasThreats = detectionCount > 0;
 
   return (
-    <div className={`${minimal ? 'bg-transparent p-0 border-0' : 'bg-slate-800 p-4 border'} rounded-lg ${
-      hasThreats && !minimal ? 'border-red-500' : 'border-slate-700'
-    }`}>
+    <div
+      className={`${fullscreen ? 'w-full h-full' : ''} ${minimal ? 'bg-transparent p-0 border-0' : 'bg-slate-800 p-4 border'} rounded-lg ${
+        hasThreats && !minimal ? 'border-red-500' : 'border-slate-700'
+      } ${onClick && !fullscreen ? 'cursor-pointer hover:border-emerald-500 transition-all duration-300 hover:scale-[1.02]' : ''}`}
+      onClick={onClick && !fullscreen ? onClick : undefined}
+    >
       {/* Camera Header */}
       {!minimal && (
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Camera className={`w-5 h-5 ${hasThreats ? 'text-red-400' : 'text-emerald-400'}`} />
-            <span className="font-medium text-white">{detection.camera_id}</span>
+            <span className={`font-medium text-white ${fullscreen ? 'text-2xl' : ''}`}>{detection.camera_id}</span>
           </div>
-          
-          {hasThreats && (
-            <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
-              <span className="text-red-400 text-sm font-medium">{detectionCount}</span>
-            </div>
-          )}
+
+          <div className="flex items-center gap-2">
+            {hasThreats && (
+              <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded">
+                <AlertTriangle className={`${fullscreen ? 'w-6 h-6' : 'w-4 h-4'} text-red-400`} />
+                <span className={`text-red-400 ${fullscreen ? 'text-xl' : 'text-sm'} font-medium`}>{detectionCount}</span>
+              </div>
+            )}
+            {onClick && !fullscreen && (
+              <div className="flex items-center gap-1 bg-slate-700/50 px-2 py-1 rounded hover:bg-emerald-500/20 transition-colors">
+                <Maximize2 className="w-4 h-4 text-slate-400" />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -144,19 +154,19 @@ export default function VideoTile({ detection, minimal = false }) {
         <canvas
           ref={canvasRef}
           className="w-full h-auto"
-          style={{ maxHeight: minimal ? '100%' : '300px', objectFit: 'contain' }}
+          style={{ maxHeight: fullscreen ? '80vh' : (minimal ? '100%' : '300px'), objectFit: 'contain' }}
         />
       </div>
 
       {/* Detection Info */}
       {!minimal && detection.detections && detection.detections.labels && detection.detections.labels.length > 0 && (
         <div className="space-y-1">
-          <div className="text-xs text-slate-400">Detections:</div>
+          <div className={`${fullscreen ? 'text-base' : 'text-xs'} text-slate-400`}>Detections:</div>
           <div className="flex flex-wrap gap-1">
             {detection.detections.labels.map((label, i) => (
               <span
                 key={i}
-                className={`text-xs px-2 py-1 rounded ${
+                className={`${fullscreen ? 'text-base px-3 py-2' : 'text-xs px-2 py-1'} rounded ${
                   label === 'Weapon' ? 'bg-red-500/20 text-red-400' :
                   label === 'Human' ? 'bg-yellow-500/20 text-yellow-400' :
                   'bg-blue-500/20 text-blue-400'
@@ -171,7 +181,7 @@ export default function VideoTile({ detection, minimal = false }) {
 
       {/* Status */}
       {!minimal && (
-        <div className="mt-2 text-xs text-slate-500">
+        <div className={`mt-2 ${fullscreen ? 'text-sm' : 'text-xs'} text-slate-500`}>
           Last update: {new Date(detection.timestamp * 1000).toLocaleTimeString()}
         </div>
       )}
