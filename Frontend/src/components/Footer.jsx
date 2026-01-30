@@ -3,7 +3,7 @@ import { Users } from "lucide-react";
 export default function Footer() {
   const teamMembers = [
     "Ayush Kumar",
-    "Ashish Kumar", 
+    "Jagan Swain", 
     "Ayoan Singh",
     "Aryan Kumar",
     "Ayushman Praharaj"

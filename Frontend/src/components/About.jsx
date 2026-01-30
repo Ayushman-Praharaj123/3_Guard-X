@@ -3,7 +3,7 @@ import { Shield, Users, Target, Zap, Eye, Sun, Wifi, MapPin, AlertTriangle, Chec
 export default function About() {
   const teamMembers = [
     { name: "Ayush Kumar", role: "Team Leader/ ML devloper" },
-    { name: "Ashish Kumar", role: "AI/ML devloper" },
+    { name: "Jagan Swain", role: "ML IOT devloper" },
     { name: "Ayoan Singh", role: "3D artist" },
     { name: "Aryan Kumar", role: "ML devloper" },
     { name: "Ayushman Praharaj", role: "Full stack ai devloper" }
@@ -110,7 +110,7 @@ export default function About() {
           Team Guard-X
         </h3>
         <div className="text-center mb-6">
-          <p className="text-emerald-400 font-semibold">NIST University</p>
+          <p className="text-emerald-400 font-semibold"></p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teamMembers.map((member, index) => (
