@@ -111,7 +111,7 @@ export default function UploadForm({ setResult, setLoading, setImage }) {
         </button>
         
         <div className="text-center text-xs text-slate-400">
-          <p>Powered by Guard-X AI | NEXTECH 1.0</p>
+          <p>Powered by Guard-X AI | CHAKRAVYUH 1.0</p>
           <p>CNN & YOLO Neural Networks</p>
         </div>
       </form>

@@ -212,9 +212,9 @@ async def process_camera_frame(frame_base64: str, camera_id: str, camera_sid: st
     
     # Draw detections on frame (using current or cached detections)
     annotated_frame = draw_detections(frame, detections)
-    
-    # Encode annotated frame (Lower quality 40 for high FPS smoothness)
-    annotated_base64 = encode_frame(annotated_frame, quality=40)
+
+    # Encode annotated frame (Quality 30 for faster encoding and smaller frames)
+    annotated_base64 = encode_frame(annotated_frame, quality=30)
     
     if annotated_base64 is None:
         return None

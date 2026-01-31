@@ -13,10 +13,10 @@
  * - detection: {camera_id, camera_sid, frame, detections, timestamp}
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { Camera, AlertTriangle, Maximize2 } from 'lucide-react';
 
-export default function VideoTile({ detection, minimal = false, fullscreen = false, onClick }) {
+function VideoTile({ detection, minimal = false, fullscreen = false, onClick }) {
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
 
@@ -31,7 +31,12 @@ export default function VideoTile({ detection, minimal = false, fullscreen = fal
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const img = new Image();
+    // Reuse existing Image object or create new one
+    let img = imageRef.current;
+    if (!img) {
+      img = new Image();
+      imageRef.current = img;
+    }
 
     img.onload = () => {
       // Only resize if dimensions changed
@@ -42,7 +47,7 @@ export default function VideoTile({ detection, minimal = false, fullscreen = fal
 
       // Draw image (contains boxes drawn by backend)
       ctx.drawImage(img, 0, 0);
-      
+
       // REMOVED frontend drawBoundingBoxes to prevent UI freeze at high FPS
     };
 
@@ -60,8 +65,6 @@ export default function VideoTile({ detection, minimal = false, fullscreen = fal
     } else {
       img.src = `data:image/jpeg;base64,${detection.frame}`;
     }
-    
-    imageRef.current = img;
   }, [detection]);
 
   // Draw bounding boxes and labels
@@ -188,4 +191,12 @@ export default function VideoTile({ detection, minimal = false, fullscreen = fal
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when parent updates
+export default memo(VideoTile, (prevProps, nextProps) => {
+  // Only re-render if detection timestamp changed
+  return prevProps.detection?.timestamp === nextProps.detection?.timestamp &&
+         prevProps.minimal === nextProps.minimal &&
+         prevProps.fullscreen === nextProps.fullscreen;
+});
 

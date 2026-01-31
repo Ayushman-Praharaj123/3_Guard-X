@@ -95,7 +95,7 @@ export default function About() {
             <Shield className="w-12 h-12 text-emerald-400" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-4">NEXTECH 1.0</h1>
+        <h1 className="text-4xl font-bold text-white mb-4">CHAKRSVYUH 1.0</h1>
         <h2 className="text-2xl text-emerald-400 mb-4">Smart Sentinel Surveillance</h2>
         <p className="text-xl text-slate-300 max-w-3xl mx-auto">
           A compact, intelligent, and covert AI-powered surveillance solution that proactively detects 

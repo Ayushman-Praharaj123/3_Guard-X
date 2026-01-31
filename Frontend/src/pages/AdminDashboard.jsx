@@ -111,25 +111,28 @@ export default function AdminDashboard() {
         timestamp: data.timestamp
       });
 
+      // Batch state updates to prevent nested re-renders
       setDetections(prevDetections => {
         const updatedDetections = {
           ...prevDetections,
           [data.camera_sid]: data
         };
-
-        // Update stats based on the NEW detections state
-        setStats(prevStats => {
-          const currentActiveThreats = Object.values(updatedDetections)
-            .reduce((sum, det) => sum + (det.detections?.count || 0), 0);
-
-          return {
-            ...prevStats,
-            totalDetections: prevStats.totalDetections + (data.detections?.count || 0),
-            activeThreats: currentActiveThreats
-          };
-        });
-
         return updatedDetections;
+      });
+
+      // Update stats separately to avoid nested state updates
+      setStats(prevStats => {
+        // Calculate active threats from current detections + new data
+        const currentActiveThreats = Object.values({
+          ...detections,
+          [data.camera_sid]: data
+        }).reduce((sum, det) => sum + (det.detections?.count || 0), 0);
+
+        return {
+          ...prevStats,
+          totalDetections: prevStats.totalDetections + (data.detections?.count || 0),
+          activeThreats: currentActiveThreats
+        };
       });
     });
 

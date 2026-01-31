@@ -154,7 +154,7 @@ export default function Login() {
           <div className="mt-8 text-center text-xs text-slate-500 space-y-1">
             <p className="text-emerald-400 font-semibold">GUARD-X SURVEILLANCE SYSTEM v2.0</p>
             <p>🎖️ MILITARY GRADE SECURITY</p>
-            <p>Powered by NEXTECH AI DIVISION</p>
+            <p>Powered by Guard-X AI DIVISION</p>
             <div className="mt-4 p-2 bg-slate-700/30 rounded border border-slate-600/50">
               <p className="text-yellow-400 text-xs">⚠️ UNAUTHORIZED ACCESS IS PROHIBITED</p>
               <p className="text-slate-400 text-xs">All activities are monitored and logged</p>

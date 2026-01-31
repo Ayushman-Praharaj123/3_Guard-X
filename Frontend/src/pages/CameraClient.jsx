@@ -22,7 +22,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { connectSocket, disconnectSocket, emitEvent, onEvent, offEvent, isConnected } from '../utils/socket';
 import { Camera, Video, VideoOff, Wifi, WifiOff, Clock, Activity } from 'lucide-react';
-import VideoTile from '../components/VideoTile';
 
 export default function CameraClient() {
   const { user, token } = useAuth();
@@ -30,7 +29,6 @@ export default function CameraClient() {
   const [connected, setConnected] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const [streaming, setStreaming] = useState(false);
-  const [currentDetection, setCurrentDetection] = useState(null);
   const [stats, setStats] = useState({
     framesSent: 0,
     fps: 0,
@@ -68,18 +66,18 @@ export default function CameraClient() {
     }
 
     try {
-      // Set canvas size
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Set canvas size to 640x480 for optimal performance (60-75% size reduction)
+      canvas.width = 640;
+      canvas.height = 480;
 
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Draw video frame to canvas
+      // Draw video frame to canvas (resized to 640x480)
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert to JPEG base64 (Ultra-low quality 0.3 for 50-60 FPS throughput)
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.3);
+      // Convert to JPEG base64 (Quality 0.6 - good balance at 640x480)
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
       const base64data = dataUrl.split(',')[1];
 
       // Emit frame to server
@@ -158,10 +156,7 @@ export default function CameraClient() {
       stopStreaming();
     });
 
-    socketInstance.on('detection:result', (data) => {
-      // console.log('🤖 Detection result received');
-      setCurrentDetection(data);
-    });
+    // REMOVED: Detection result listener - operator no longer receives detections for performance
 
     return () => {
       console.log('🧹 Cleaning up camera client...');
@@ -247,7 +242,6 @@ export default function CameraClient() {
     }
 
     setStreaming(false);
-    setCurrentDetection(null);
     setStats(prev => ({ ...prev, status: deployed ? 'DEPLOYED' : 'IDLE' }));
   };
 
@@ -383,32 +377,25 @@ export default function CameraClient() {
             <h3 className="text-lg font-semibold mb-4">Camera Preview</h3>
 
             <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
-              {streaming && currentDetection ? (
-                <div className="w-full h-full">
-                  <VideoTile detection={currentDetection} minimal={true} />
+              {/* Show raw webcam feed only - detection rendering removed for performance */}
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`w-full h-full object-contain ${streaming ? 'block' : 'hidden'}`}
+              />
+
+              {!streaming && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <Camera className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                    <p className="text-slate-400">Camera inactive</p>
+                    <p className="text-slate-500 text-sm">
+                      {deployed ? 'Starting camera...' : 'Waiting for deployment'}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <>
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className={`w-full h-full object-contain ${streaming ? 'block' : 'hidden'}`}
-                  />
-                  
-                  {!streaming && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <Camera className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                        <p className="text-slate-400">Camera inactive</p>
-                        <p className="text-slate-500 text-sm">
-                          {deployed ? 'Starting camera...' : 'Waiting for deployment'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </>
               )}
             </div>
 
