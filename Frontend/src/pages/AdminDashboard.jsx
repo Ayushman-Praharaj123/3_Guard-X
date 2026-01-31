@@ -102,7 +102,7 @@ export default function AdminDashboard() {
 
     // Detection events
     socketInstance.on('detection:result', (data) => {
-      console.log('🤖 Detection result received:', {
+      console.log(' Detection result received:', {
         camera_sid: data.camera_sid,
         camera_id: data.camera_id,
         hasFrame: !!data.frame,
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-700 rounded-lg flex items-center justify-center">
-              🚁
+              
             </div>
             <div>
               <h1 className="text-xl font-bold">Guard-X Command Center</h1>
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Users className="w-5 h-5 text-yellow-400" />
-              <span className="text-sm text-slate-400">Total Detections</span>
+              <span className="text-sm text-slate-400">FPS</span>
             </div>
             <div className="text-2xl font-bold text-yellow-400">{stats.totalDetections}</div>
           </div>
